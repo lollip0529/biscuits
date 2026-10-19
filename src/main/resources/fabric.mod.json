@@ -1,0 +1,21 @@
+{
+    "schemaVersion": 1,
+    "id": "biscuits",
+    "version": "${version}",
+    "name": "biscuits",
+    "description": "Full-screen chunk section map of Sodium's culling graph, with per-section render, block entity and entity details.",
+    "authors": [
+        "lollip0529"
+    ],
+    "license": "LGPL-3.0-only",
+    "environment": "client",
+    "mixins": [
+        "biscuits.mixins.json"
+    ],
+    "depends": {
+        "fabricloader": ">=0.15.0",
+        "minecraft": "1.16.1",
+        "java": ">=17",
+        "sodium": ">=2.5.0"
+    }
+}

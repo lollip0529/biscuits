@@ -1,0 +1,25 @@
+{
+    "required": true,
+    "minVersion": "0.8",
+    "package": "io.github.lollip0529.biscuits.mixin",
+    "compatibilityLevel": "JAVA_17",
+    "client": [
+        "BlockEntityRenderDispatcherMixin",
+        "DebugRendererAccessor",
+        "GameOptionsMixin",
+        "InGameHudMixin",
+        "KeyBindingMixin",
+        "Matrix4fAccessor",
+        "MinecraftClientAccessor",
+        "MinecraftClientMixin",
+        "WorldRendererMixin",
+        "sodium.ChunkGraphCullerAccessor",
+        "sodium.ChunkGraphNodeAccessor",
+        "sodium.ChunkRenderManagerAccessor",
+        "sodium.ChunkRenderManagerMixin",
+        "sodium.SodiumWorldRendererAccessor"
+    ],
+    "injectors": {
+        "defaultRequire": 1
+    }
+}

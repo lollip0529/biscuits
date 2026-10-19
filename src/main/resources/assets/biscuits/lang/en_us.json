@@ -1,0 +1,13 @@
+{
+    "key.categories.biscuits": "biscuits",
+    "key.biscuits.open": "Open map",
+    "key.biscuits.esp": "ESP",
+    "key.biscuits.view": "Next view (live/resizings)",
+    "key.biscuits.all_y": "All sections / one y",
+    "key.biscuits.up": "Section up",
+    "key.biscuits.down": "Section down",
+    "key.biscuits.camera": "Back to camera",
+    "key.biscuits.terrain": "Terrain layer",
+    "key.biscuits.freeze": "Freeze",
+    "key.biscuits.legend": "Colour legend"
+}
