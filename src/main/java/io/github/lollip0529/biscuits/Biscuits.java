@@ -28,9 +28,10 @@ public final class Biscuits {
     public static final KeyBinding DOWN = new KeyBinding("key.biscuits.down", InputUtil.UNKNOWN_KEY.getCode(), CATEGORY);
     public static final KeyBinding CAMERA = new KeyBinding("key.biscuits.camera", InputUtil.UNKNOWN_KEY.getCode(), CATEGORY);
     public static final KeyBinding TERRAIN = new KeyBinding("key.biscuits.terrain", InputUtil.UNKNOWN_KEY.getCode(), CATEGORY);
+    public static final KeyBinding FRUSTUM = new KeyBinding("key.biscuits.frustum", InputUtil.UNKNOWN_KEY.getCode(), CATEGORY);
     public static final KeyBinding FREEZE = new KeyBinding("key.biscuits.freeze", InputUtil.UNKNOWN_KEY.getCode(), CATEGORY);
     public static final KeyBinding LEGEND = new KeyBinding("key.biscuits.legend", InputUtil.UNKNOWN_KEY.getCode(), CATEGORY);
-    public static final List<KeyBinding> ALL = Arrays.asList(OPEN, ESP, VIEW, ALL_Y, UP, DOWN, CAMERA, TERRAIN, FREEZE, LEGEND);
+    public static final List<KeyBinding> ALL = Arrays.asList(OPEN, ESP, VIEW, ALL_Y, UP, DOWN, CAMERA, TERRAIN, FRUSTUM, FREEZE, LEGEND);
     public static final List<KeyBinding> MAP_ONLY = ALL.subList(2, ALL.size());
 
     // what actually got rendered last frame. drawing* fills up during the frame, then gets swapped into drawn*

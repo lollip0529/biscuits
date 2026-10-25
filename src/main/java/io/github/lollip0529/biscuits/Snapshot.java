@@ -25,6 +25,7 @@ import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.Frustum;
 import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
 import net.minecraft.client.util.math.Vector3f;
+import net.minecraft.client.util.math.Vector4f;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.util.collection.TypeFilterableList;
@@ -657,6 +658,57 @@ public class Snapshot {
 
     public double horizontalHalfFov() {
         return Math.atan(1 / ((Matrix4fAccessor) (Object) this.projection).biscuits$a00());
+    }
+
+    // search frustum between y0 and y1 seen from above, as x z points. far plane is 4x render distance so it always
+    // runs off the map
+    public List<double[]> frustum(double y0, double y1) {
+        Matrix4f m = this.projection.copy();
+        m.multiply(this.model);
+        if (!m.invert()) return Collections.emptyList();
+        Vec3d[] c = new Vec3d[8];
+        for (int i = 0; i < 8; i++) {
+            Vector4f v = new Vector4f((i & 1) * 2 - 1, (i >> 1 & 1) * 2 - 1, (i >> 2) * 2 - 1, 1);
+            v.transform(m);
+            v.normalizeProjectiveCoordinates();
+            c[i] = this.searchCamera.add(v.getX(), v.getY(), v.getZ());
+        }
+
+        // corners inside the slab + edges crossing y0 / y1
+        List<double[]> pts = new ArrayList<>();
+        for (int i = 0; i < 8; i++) {
+            if (c[i].y >= y0 && c[i].y <= y1) pts.add(new double[]{c[i].x, c[i].z});
+            for (int bit = 1; bit < 8; bit <<= 1) {
+                if ((i & bit) != 0) continue;
+                Vec3d a = c[i], b = c[i | bit];
+                for (double y : new double[]{y0, y1}) {
+                    double t = (y - a.y) / (b.y - a.y);
+                    if (t > 0 && t < 1) pts.add(new double[]{a.x + (b.x - a.x) * t, a.z + (b.z - a.z) * t});
+                }
+            }
+        }
+        return hull(pts);
+    }
+
+    // monotone chain
+    private static List<double[]> hull(List<double[]> pts) {
+        if (pts.size() < 3) return Collections.emptyList();
+        pts.sort(Comparator.<double[]>comparingDouble(p -> p[0]).thenComparingDouble(p -> p[1]));
+        List<double[]> h = new ArrayList<>();
+        for (int pass = 0; pass < 2; pass++) {
+            int base = h.size();
+            for (double[] p : pts) {
+                while (h.size() >= base + 2 && turn(h.get(h.size() - 2), h.get(h.size() - 1), p) <= 0) h.remove(h.size() - 1);
+                h.add(p);
+            }
+            h.remove(h.size() - 1);
+            Collections.reverse(pts);
+        }
+        return h;
+    }
+
+    private static double turn(double[] o, double[] a, double[] b) {
+        return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
     }
 
     // replays each neighbour's edge into an unreached t, with computeVisible / bfsEnqueue's checks

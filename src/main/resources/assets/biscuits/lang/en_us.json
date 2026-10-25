@@ -8,6 +8,7 @@
     "key.biscuits.down": "Section down",
     "key.biscuits.camera": "Back to camera",
     "key.biscuits.terrain": "Terrain layer",
+    "key.biscuits.frustum": "Frustum",
     "key.biscuits.freeze": "Freeze",
     "key.biscuits.legend": "Colour legend"
 }

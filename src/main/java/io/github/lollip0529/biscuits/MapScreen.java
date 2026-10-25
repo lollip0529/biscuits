@@ -53,7 +53,7 @@ public class MapScreen extends Screen {
 
     // kept between openings. cell 0 = fit the render distance
     private static double savedCell;
-    private static boolean allY, terrainOn, legend, info, frozen;
+    private static boolean allY, terrainOn, frustumOn, legend, info, frozen;
     private static Snapshot savedLive;
     // pastry reads the pie from here, the slices under level > entities
     private static final String PIE = "root\u001egameRenderer\u001elevel\u001eentities";
@@ -153,6 +153,9 @@ public class MapScreen extends Screen {
             this.drawTerrain(m);
         }
         this.drawGrid(matrices, m);
+        if (frustumOn) {
+            this.drawFrustum(m);
+        }
         this.drawCamera(m);
         this.drawInfo(matrices);
         this.drawButtons(matrices);
@@ -257,6 +260,34 @@ public class MapScreen extends Screen {
             String n = String.valueOf(c[2]);
             this.textRenderer.drawWithShadow(matrices, n, c[0] - 2 - this.textRenderer.getWidth(n), c[1] - 10, ENTITY);
         }
+    }
+
+    // search frustum for this slab, clipped to the grid
+    private void drawFrustum(Matrix4f m) {
+        int y0 = allY ? 0 : this.sliceY << 4;
+        List<double[]> poly = this.snap.frustum(y0, allY ? 256 : y0 + 16);
+        if (poly.size() < 3) return;
+        int r = this.snap.renderDistance + 3;
+        this.scissor((int) this.sx(this.snap.centerX - r), (int) this.sz(this.snap.centerZ - r),
+                (int) this.sx(this.snap.centerX + r + 1), (int) this.sz(this.snap.centerZ + r + 1));
+
+        RenderSystem.disableTexture();
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        // z is flipped on screen -> hull winds backwards
+        RenderSystem.disableCull();
+        BufferBuilder b = Tessellator.getInstance().getBuffer();
+        b.begin(GL11.GL_TRIANGLE_FAN, VertexFormats.POSITION_COLOR);
+        for (double[] p : poly) b.vertex(m, this.sx(p[0] / 16), this.sz(p[1] / 16), 0).color(1f, 1f, 1f, 0.25f).next();
+        Tessellator.getInstance().draw();
+        RenderSystem.enableCull();
+        RenderSystem.lineWidth(2);
+        b.begin(GL11.GL_LINE_LOOP, VertexFormats.POSITION_COLOR);
+        for (double[] p : poly) b.vertex(m, this.sx(p[0] / 16), this.sz(p[1] / 16), 0).color(1f, 1f, 1f, 0.9f).next();
+        Tessellator.getInstance().draw();
+        RenderSystem.lineWidth(1);
+        this.noScissor();
+        end();
     }
 
     private void drawCamera(Matrix4f m) {
@@ -410,6 +441,7 @@ public class MapScreen extends Screen {
         String viewName = this.view == null ? "Live" : this.view.id;
         x = this.button(matrices, x, y, 120, "View: " + viewName, this::nextView) + 4;
         x = this.button(matrices, x, y, 96, "Terrain: " + (terrainOn ? "ON" : "OFF"), () -> terrainOn = !terrainOn) + 4;
+        x = this.button(matrices, x, y, 96, "Frustum: " + (frustumOn ? "ON" : "OFF"), () -> frustumOn = !frustumOn) + 4;
         x = this.button(matrices, x, y, 90, "Freeze: " + (frozen ? "ON" : "OFF"), () -> frozen = !frozen) + 4;
         x = this.button(matrices, x, y, 60, "Legend", () -> {
             legend = !legend;
@@ -826,6 +858,8 @@ public class MapScreen extends Screen {
             allY = !allY;
         } else if (Biscuits.TERRAIN.matchesKey(key, scan)) {
             terrainOn = !terrainOn;
+        } else if (Biscuits.FRUSTUM.matchesKey(key, scan)) {
+            frustumOn = !frustumOn;
         } else if (Biscuits.FREEZE.matchesKey(key, scan)) {
             frozen = !frozen;
         } else if (Biscuits.LEGEND.matchesKey(key, scan)) {
