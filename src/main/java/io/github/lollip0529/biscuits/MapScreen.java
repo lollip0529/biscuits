@@ -53,15 +53,16 @@ public class MapScreen extends Screen {
 
     // kept between openings. cell 0 = fit the render distance
     private static double savedCell;
-    private static boolean allY, terrainOn, legend, info;
+    private static boolean allY, terrainOn, legend, info, frozen;
+    private static Snapshot savedLive;
     // pastry reads the pie from here, the slices under level > entities
     private static final String PIE = "root\u001egameRenderer\u001elevel\u001eentities";
 
     private Toolscreen toolscreen;
     private Toolscreen.Mode view;
-    private Snapshot live, sim, snap;
+    private Snapshot live = savedLive, sim, snap;
     private long captured;
-    private boolean frozen, centered;
+    private boolean centered;
     private double viewX, viewZ, cell = savedCell;
     private int sliceY;
     private boolean followY = true;
@@ -93,6 +94,7 @@ public class MapScreen extends Screen {
     @Override
     public void removed() {
         savedCell = this.cell;
+        savedLive = frozen ? this.live : null;
         if (this.terrain != null) {
             this.terrain.close();
             this.terrain = null;
@@ -111,7 +113,7 @@ public class MapScreen extends Screen {
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         long now = Util.getMeasuringTimeMs();
         // recapture every 100ms unless frozen
-        if (!this.frozen && (this.live == null || now - this.captured > 100)) {
+        if (this.live == null || !frozen && now - this.captured > 100) {
             Snapshot s = Snapshot.capture(this.client);
             if (s != null) {
                 this.live = s;
@@ -325,7 +327,7 @@ public class MapScreen extends Screen {
             this.textRenderer.drawWithShadow(matrices, line, 6, y, GRAY);
             y += 10;
         }
-        if (this.frozen) {
+        if (frozen) {
             this.textRenderer.drawWithShadow(matrices, "Frozen", 6, y + 1, GOLD);
         }
     }
@@ -408,7 +410,7 @@ public class MapScreen extends Screen {
         String viewName = this.view == null ? "Live" : this.view.id;
         x = this.button(matrices, x, y, 120, "View: " + viewName, this::nextView) + 4;
         x = this.button(matrices, x, y, 96, "Terrain: " + (terrainOn ? "ON" : "OFF"), () -> terrainOn = !terrainOn) + 4;
-        x = this.button(matrices, x, y, 90, "Freeze: " + (this.frozen ? "ON" : "OFF"), () -> this.frozen = !this.frozen) + 4;
+        x = this.button(matrices, x, y, 90, "Freeze: " + (frozen ? "ON" : "OFF"), () -> frozen = !frozen) + 4;
         x = this.button(matrices, x, y, 60, "Legend", () -> {
             legend = !legend;
             info = false;
@@ -825,7 +827,7 @@ public class MapScreen extends Screen {
         } else if (Biscuits.TERRAIN.matchesKey(key, scan)) {
             terrainOn = !terrainOn;
         } else if (Biscuits.FREEZE.matchesKey(key, scan)) {
-            this.frozen = !this.frozen;
+            frozen = !frozen;
         } else if (Biscuits.LEGEND.matchesKey(key, scan)) {
             legend = !legend;
         } else {
