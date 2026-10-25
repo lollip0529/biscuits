@@ -91,11 +91,6 @@ public class MapScreen extends Screen {
     }
 
     @Override
-    public boolean isPauseScreen() {
-        return false;
-    }
-
-    @Override
     public void removed() {
         savedCell = this.cell;
         if (this.terrain != null) {
